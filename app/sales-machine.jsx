@@ -2,111 +2,178 @@
 
 import { useState, useEffect, useRef } from "react";
 
-// --- SYSTEM PROMPT ---
+// ─── SYSTEM PROMPT ────────────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are a legendary Direct-Response Copywriter — the fusion of David Ogilvy's research obsession, Gary Halbert's street-smart aggression, and Alex Hormozi's irresistible offer engineering. You write Gumroad sales pages that convert cold traffic into buyers.
 
 Given a product name, niche, price, and value proposition, generate a complete high-conversion Gumroad sales page using layered PAS + AIDA frameworks.`;
 
 export default function SalesMachine() {
-  const [inputs, setInputs] = useState({
+  // --- STATE MANAGEMENT ---
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState("");
+  const [formData, setFormData] = useState({
     productName: "",
     niche: "",
     price: "",
     audience: "",
-    transformation: "",
+    transformation: ""
   });
-  const [isWriting, setIsWriting] = useState(false);
-  const [output, setOutput] = useState("");
 
+  // --- API CALL LOGIC ---
   const handleGenerate = async () => {
-    if (!inputs.productName || !inputs.niche) {
-      alert("Please fill in the required fields");
+    if (!formData.productName || !formData.niche) {
+      alert("Please enter at least the Product Name and Niche.");
       return;
     }
-    
-    setIsWriting(true);
-    setOutput("");
+
+    setLoading(true);
+    setResult("");
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: `SYSTEM_PROMPT: ${SYSTEM_PROMPT} \n\n USER_INPUTS: ${JSON.stringify(inputs)}`
+          prompt: `${SYSTEM_PROMPT} \n\n PRODUCT DETAILS: ${JSON.stringify(formData)}`
         }),
       });
 
       const data = await response.json();
-      if (data.text) {
-        setOutput(data.text);
-      }
+      setResult(data.text || "No response from AI.");
     } catch (error) {
-      console.error("Error:", error);
-      setOutput("Error connecting to AI. Make sure your API Key is set in Vercel.");
+      setResult("Error: Connection failed. Check your API Key in Vercel.");
     } finally {
-      setIsWriting(false);
+      setLoading(false);
     }
   };
 
+  // --- UI DESIGN (YOUR ORIGINAL STYLE) ---
   return (
-    <div style={{ backgroundColor: "#050505", minHeight: "100vh", color: "white", padding: "40px", fontFamily: "sans-serif" }}>
-      <div style={{ maxWidth: "700px", margin: "0 auto", border: "1px solid #1a1a1a", borderRadius: "24px", padding: "40px", background: "#080808" }}>
+    <div style={{
+      fontFamily: "'Inter', sans-serif",
+      background: "#050505",
+      color: "white",
+      minHeight: "100vh",
+      padding: "40px 20px",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center"
+    }}>
+      <div style={{
+        width: "100%",
+        maxWidth: "540px",
+        background: "#080808",
+        border: "1px solid #1a1a1a",
+        borderRadius: "32px",
+        padding: "40px",
+        boxShadow: "0 20px 50px rgba(0,0,0,0.5)"
+      }}>
         
-        {/* Header */}
+        {/* Header Section */}
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <p style={{ color: "#ff4d6d", fontSize: "12px", letterSpacing: "2px", fontWeight: "bold" }}>PHASE 03 — SALES MACHINE</p>
-          <h1 style={{ fontSize: "2.5rem", fontWeight: "bold", marginTop: "10px" }}>
+          <div style={{
+            display: "inline-block",
+            padding: "6px 14px",
+            borderRadius: "100px",
+            background: "rgba(255, 77, 109, 0.05)",
+            border: "1px solid rgba(255, 77, 109, 0.2)",
+            color: "#ff4d6d",
+            fontSize: "10px",
+            fontWeight: "800",
+            letterSpacing: "0.15em",
+            marginBottom: "20px"
+          }}>PHASE 03 — SALES MACHINE</div>
+          
+          <h1 style={{ fontSize: "36px", fontWeight: "900", letterSpacing: "-0.04em", marginBottom: "10px" }}>
             High-Conversion <span style={{ color: "#ff4d6d" }}>Sales Machine</span>
           </h1>
+          <p style={{ color: "#444", fontSize: "14px" }}>Generate professional sales copy in seconds.</p>
         </div>
 
-        {/* Form Inputs */}
-        <div style={{ display: "grid", gap: "20px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-            <div>
-              <label style={{ fontSize: "10px", color: "#555", marginBottom: "8px", display: "block" }}>PRODUCT NAME *</label>
+        {/* Form Fields */}
+        <div style={{ display: "grid", gap: "24px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <label style={{ fontSize: "10px", color: "#666", fontWeight: "700", letterSpacing: "0.05em" }}>PRODUCT NAME</label>
               <input 
-                style={{ width: "100%", background: "#111", border: "1px solid #222", padding: "12px", borderRadius: "8px", color: "white" }}
-                onChange={(e) => setInputs({...inputs, productName: e.target.value})}
+                type="text" 
+                placeholder="e.g. AI Blueprint"
+                value={formData.productName}
+                onChange={(e) => setFormData({...formData, productName: e.target.value})}
+                style={{ background: "#0c0c0c", border: "1px solid #1a1a1a", padding: "14px", borderRadius: "14px", color: "white", outline: "none", fontSize: "14px" }} 
               />
             </div>
-            <div>
-              <label style={{ fontSize: "10px", color: "#555", marginBottom: "8px", display: "block" }}>NICHE *</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <label style={{ fontSize: "10px", color: "#666", fontWeight: "700", letterSpacing: "0.05em" }}>NICHE</label>
               <input 
-                style={{ width: "100%", background: "#111", border: "1px solid #222", padding: "12px", borderRadius: "8px", color: "white" }}
-                onChange={(e) => setInputs({...inputs, niche: e.target.value})}
+                type="text" 
+                placeholder="e.g. SaaS Founders"
+                value={formData.niche}
+                onChange={(e) => setFormData({...formData, niche: e.target.value})}
+                style={{ background: "#0c0c0c", border: "1px solid #1a1a1a", padding: "14px", borderRadius: "14px", color: "white", outline: "none", fontSize: "14px" }} 
               />
             </div>
           </div>
 
-          <div>
-            <label style={{ fontSize: "10px", color: "#555", marginBottom: "8px", display: "block" }}>CORE TRANSFORMATION *</label>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <label style={{ fontSize: "10px", color: "#666", fontWeight: "700", letterSpacing: "0.05em" }}>PRICE & CORE OFFER</label>
             <textarea 
-              rows="3"
-              style={{ width: "100%", background: "#111", border: "1px solid #222", padding: "12px", borderRadius: "8px", color: "white", resize: "none" }}
-              onChange={(e) => setInputs({...inputs, transformation: e.target.value})}
+              placeholder="What is the price and the main result they get?"
+              value={formData.transformation}
+              onChange={(e) => setFormData({...formData, transformation: e.target.value})}
+              style={{ background: "#0c0c0c", border: "1px solid #1a1a1a", padding: "14px", borderRadius: "14px", color: "white", outline: "none", fontSize: "14px", minHeight: "100px", resize: "none" }} 
             />
           </div>
 
+          {/* Action Button */}
           <button 
             onClick={handleGenerate}
-            disabled={isWriting}
-            style={{ 
-              width: "100%", padding: "16px", background: isWriting ? "#333" : "#ff4d6d", 
-              borderRadius: "12px", color: "white", fontWeight: "bold", cursor: "pointer", border: "none", transition: "0.3s"
-            }}
-          >
-            {isWriting ? "WRITING PAGE..." : "GENERATE SALES PAGE"}
+            disabled={loading}
+            style={{
+              background: loading ? "#111" : "#ff4d6d",
+              color: "white",
+              border: "none",
+              padding: "18px",
+              borderRadius: "16px",
+              fontWeight: "900",
+              fontSize: "15px",
+              cursor: loading ? "not-allowed" : "pointer",
+              transition: "transform 0.2s, background 0.2s",
+              marginTop: "10px",
+              boxShadow: loading ? "none" : "0 10px 20px rgba(255, 77, 109, 0.2)"
+            }}>
+            {loading ? "WRITING YOUR PAGE..." : "GENERATE SALES PAGE"}
           </button>
         </div>
 
-        {/* Output Section */}
-        {output && (
-          <div style={{ marginTop: "40px", padding: "24px", background: "#000", border: "1px solid #ff4d6d33", borderRadius: "16px", whiteSpace: "pre-wrap", lineHeight: "1.6", color: "#ddd" }}>
-            {output}
+        {/* AI Result Area */}
+        {result && (
+          <div style={{
+            marginTop: "40px",
+            padding: "24px",
+            background: "#000",
+            border: "1px solid rgba(255, 77, 109, 0.3)",
+            borderRadius: "20px",
+            whiteSpace: "pre-wrap",
+            fontSize: "15px",
+            lineHeight: "1.7",
+            color: "#eee",
+            maxHeight: "500px",
+            overflowY: "auto"
+          }}>
+            {result}
           </div>
         )}
 
+        {/* Footer Navigation (The Dots) */}
+        <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "40px" }}>
+           {[1, 2, 3].map(i => (
+             <div key={i} style={{
+               width: "6px", height: "6px", borderRadius: "50%",
+               background: i === 3 ? "#ff4d6d" : "#1a1a1a"
+             }} />
+           ))}
+        </div>
       </div>
     </div>
   );
